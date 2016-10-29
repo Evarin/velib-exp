@@ -25,7 +25,7 @@ __Just save the data for later__:
     python get_data.py paris
 
 
-Works with all the countries pro
+Works with [many cities](https://developer.jcdecaux.com/#/opendata/vls?page=static).
 
 Demo
 ----
