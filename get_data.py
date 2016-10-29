@@ -1,5 +1,6 @@
 import urllib, json
 import numpy as np
+import time
 
 from secrets import API_KEY # JCDECAUX's API KEY
 
@@ -19,3 +20,10 @@ def extract_data(data):
                         for p in data]).astype(np.float32)
 
     return (x, y), (st_free, st_busy)
+
+def save_data(data, ofile="output/data.npy"):
+    np.save(ofile, data)
+
+if __name__ == '__main__':
+    data = extract_data(retrieve_data())
+    save_data(data, 'output/{}.npy'.format(int(time.time())))
