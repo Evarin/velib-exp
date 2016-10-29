@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.neighbors import KDTree
 from scipy.ndimage.filters import gaussian_filter
 
+from PIL import Image
 
 # Main function to build a heatmap
 def build_map(positions, status,
@@ -20,7 +21,8 @@ def build_map(positions, status,
     min_busy = float(min_busy)
     
     bds = (x.min()-oob, y.min()-oob, x.max()+oob, y.max()+oob)
-
+    print bds
+    
     x = (x-bds[0])/resolution
     x = x.astype(np.int32)
     y = (y-bds[1])/resolution
@@ -54,7 +56,7 @@ def build_map(positions, status,
     sb = blurit(sb)
     sa = blurit(sa, sigma=sigma*2, coef=coef*4)
 
-    map = np.zeros((h, w, 3))
+    map = np.zeros((h, w, 4))
     tmp = 1.0-(sf+sb)
     tmp[tmp<0.] = 0.
     map[:,:,0] = (sb-sf**1.5) + tmp 
@@ -64,7 +66,8 @@ def build_map(positions, status,
     #map[:,:,0] = sf
     #map[:,:,1] = sb
     #map[:,:,2] = 0.
-    map *= sa.reshape((sa.shape[0], sa.shape[1], 1))
+    #map *= sa.reshape((sa.shape[0], sa.shape[1], 1))
+    map[:,:,3] = sa
 
     # Rebalance colors
     map[:,:,0] += map[:,:,1] * 0.2
@@ -75,7 +78,7 @@ def build_map(positions, status,
     map[map<0.] = 0.
     map[y,x,:]=1.
     
-    return map
+    return (bds, map)
 
 # Clumsy very-slow version, that has an interpretible meaning
 def build_map0(data, resolution=0.0005, oob=0.005,
@@ -123,7 +126,7 @@ def build_map0(data, resolution=0.0005, oob=0.005,
             map[i, j, :] = ((1-sf)*mdist,
                             (1.-abs(sb-sf)/(sb+sf+0.1)*2)*mdist*0,
                             max(0, sf-sb)*mdist)
-    return map
+    return (bds, map)
 
 
 
@@ -131,9 +134,18 @@ def build_map0(data, resolution=0.0005, oob=0.005,
 # Get data and show
 
 def show_map(map):
-    plt.imshow(map)
+    plt.imshow(map[:,:,:3])
     plt.show()
 
+def save_map(map, bounds, imfile="output/image.png", jsfile="output/mapdata.js"):
+    map = map*255
+    map = map.astype(np.uint8)
+    image = Image.fromarray(map)
+    image.save(imfile)
+    js = "map_bounds=[{}, {}, {}, {}]".format(-bounds[3], bounds[0], -bounds[1], bounds[2])
+    with open(jsfile, 'w') as target:
+        target.write(js)
+    
 if __name__ == '__main__':
     import sys
     if len(sys.argv)>1:
@@ -144,6 +156,8 @@ if __name__ == '__main__':
     position = (np.array([0., 0., 1., 1.])*0.004, np.array([0., 1., 0., 1.])*0.004)
     status = (np.array([0., 10., 0., 10.]), np.array([0., 0., 10., 10.]))
     position, status = extract_data(data)
-    map = build_map(position, status)
-    show_map(map)
+    bounds, map = build_map(position, status)
+    #show_map(map)
+    save_map(map, bounds)
+    
 
