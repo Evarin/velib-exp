@@ -153,12 +153,10 @@ if __name__ == '__main__':
     else:
         contract = 'paris'
     data = retrieve_data(contract)
-    position = (np.array([0., 0., 1., 1.])*0.004, np.array([0., 1., 0., 1.])*0.004)
-    status = (np.array([0., 10., 0., 10.]), np.array([0., 0., 10., 10.]))
+    #position = (np.array([0., 0., 1., 1.])*0.004, np.array([0., 1., 0., 1.])*0.004)
+    #status = (np.array([0., 10., 0., 10.]), np.array([0., 0., 10., 10.]))
     position, status = extract_data(data)
     save_data((position, status))
     bounds, map = build_map(position, status)
     #show_map(map)
-    #save_map(map, bounds)
-    
-
+    save_map(map, bounds)
