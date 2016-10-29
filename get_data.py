@@ -25,5 +25,10 @@ def save_data(data, ofile="output/data.npy"):
     np.save(ofile, data)
 
 if __name__ == '__main__':
-    data = extract_data(retrieve_data())
+    import sys
+    if len(sys.argv)>1:
+        contract = sys.argv[1]
+    else:
+        contract = 'paris'
+    data = extract_data(retrieve_data(contract))
     save_data(data, 'output/{}.npy'.format(int(time.time())))
