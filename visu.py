@@ -10,71 +10,90 @@ def build_map(positions, status,
               resolution=0.00025, oob=0.005,
               min_free=10, min_busy=10,
               max_dist=0.001):
-    print "Rendering..."
-
+    # positions : (x, y), 2 NDarrays (npoints,)
+    # status : (stands_availables, bikes_availables), 2 NDarrays (npoints,)
+    # resolution : coef to convert lat-long -> pixels    TODO anisotropic
+    # oob : out_of_bounds value
+    # min_free / min_bsy : threshold at which we consider a station is "ok"
+    # max_dist : unused
+    
+    # Extract data
     x, y = positions
     st_free, st_busy = status
     
     min_free = float(min_free)
     min_busy = float(min_busy)
-    
+
+    # Bounds
     bds = (x.min()-oob, y.min()-oob, x.max()+oob, y.max()+oob)
-    print bds
-    
+
+    # Rescale
     x = (x-bds[0])/resolution
     x = x.astype(np.int32)
     y = (y-bds[1])/resolution
     y = y.astype(np.int32)
     max_dist = max_dist/resolution
 
+    # Size of image
     w = int((bds[2]-bds[0])/resolution)
     h = int((bds[3]-bds[1])/resolution)
 
-    sf = np.zeros((h, w))
-    sb = np.zeros((h, w))
-    sa = np.zeros((h, w))
-    
+    # Buffers
+    sf = np.zeros((h, w)) # pixels free
+    sb = np.zeros((h, w)) # pixels busy
+    sa = np.zeros((h, w)) # pixels close to any station
+
+    # Renormalize data
     st_free[st_free>min_free] = min_free
     st_free /= min_free
     st_busy[st_busy>min_busy] = min_busy
     st_busy /= min_busy
 
+    # Place data
     sf[y, x] = st_free
     sb[y, x] = st_busy
     sa[y, x] = 1. 
 
+    # Blur data
     sigma = 0.002/resolution
     coef = 0.00001/(resolution**2)
     def blurit(a, sigma=sigma, coef=coef):
         a = gaussian_filter(a, sigma, mode='constant') * coef
         a[a>1.] = 1.
         return a
-    print (sigma, coef)
+    # print (sigma, coef)
     sf = blurit(sf)
     sb = blurit(sb)
     sa = blurit(sa, sigma=sigma*2, coef=coef*4)
 
+    # Do magic with colors
     map = np.zeros((h, w, 4))
     tmp = 1.0-(sf+sb)
     tmp[tmp<0.] = 0.
     map[:,:,0] = (sb-sf**1.5) + tmp 
-    map[:,:,1] = (1.-np.abs(sb-sf))#/(sf+sb+0.1)**0.9)*(0.6+(sb+sf)/5.)
+    map[:,:,1] = (1.-np.abs(sb-sf))
     map[:,:,2] = (sf-sb**1.5)
-
-    #map[:,:,0] = sf
-    #map[:,:,1] = sb
-    #map[:,:,2] = 0.
-    #map *= sa.reshape((sa.shape[0], sa.shape[1], 1))
-    map[:,:,3] = sa
 
     # Rebalance colors
     map[:,:,0] += map[:,:,1] * 0.2
     map[:,:,1] += map[:,:,2] * 0.3
 
+    # Control version
+    if False:
+        map[:,:,0] = sf
+        map[:,:,1] = sb
+        map[:,:,2] = sa
 
+    # Alpha value
+    #map *= sa.reshape((sa.shape[0], sa.shape[1], 1))
+    map[:,:,3] = sa
+
+    # Crop values
     map[map>1.] = 1.
     map[map<0.] = 0.
-    map[y,x,:]=1.
+
+    # Show stations
+    map[y,x,:] = 1.
     
     return (bds, map)
 
@@ -128,9 +147,7 @@ def build_map0(data, resolution=0.0005, oob=0.005,
     return (bds, map)
 
 
-
-
-# Get data and show
+# Util functions to show the result and save it
 
 def show_map(map):
     import matplotlib.pyplot as plt
@@ -138,14 +155,18 @@ def show_map(map):
     plt.show()
 
 def save_map(map, bounds, imfile="output/image.png", jsfile="output/mapdata.js"):
-    map = map*255
+    map = map * 255
     map = map.astype(np.uint8)
     image = Image.fromarray(map)
     image.save(imfile)
-    js = "map_bounds=[{}, {}, {}, {}]".format(-bounds[3], bounds[0], -bounds[1], bounds[2])
+    js = "map_bounds=[%f, %f, %f, %f]; last_update=%d;" % (-bounds[3], bounds[0],
+                                                           -bounds[1], bounds[2],
+                                                           int(time.time()))
     with open(jsfile, 'w') as target:
         target.write(js)
-    
+
+# Main
+
 if __name__ == '__main__':
     import sys
     if len(sys.argv)>1:
@@ -153,10 +174,15 @@ if __name__ == '__main__':
     else:
         contract = 'paris'
     data = retrieve_data(contract)
-    #position = (np.array([0., 0., 1., 1.])*0.004, np.array([0., 1., 0., 1.])*0.004)
-    #status = (np.array([0., 10., 0., 10.]), np.array([0., 0., 10., 10.]))
-    position, status = extract_data(data)
-    save_data((position, status))
+    if False:
+        # Control : show 4 stations, with a different status, to see how colors blend
+        position = (np.array([0., 0., 1., 1.])*0.004,
+                    np.array([0., 1., 0., 1.])*0.004)
+        status = (np.array([0., 10., 0., 10.]),
+                  np.array([0., 0., 10., 10.]))
+    else:
+        position, status = extract_data(data)
+        # save_data((position, status))
     bounds, map = build_map(position, status)
-    #show_map(map)
+    # show_map(map)
     save_map(map, bounds)
