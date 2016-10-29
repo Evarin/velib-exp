@@ -1,8 +1,6 @@
 from get_data import *
 
-import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.neighbors import KDTree
 from scipy.ndimage.filters import gaussian_filter
 
 from PIL import Image
@@ -84,6 +82,7 @@ def build_map(positions, status,
 def build_map0(data, resolution=0.0005, oob=0.005,
               min_free=10, min_busy=10,
               max_dist=0.001):
+    from sklearn.neighbors import KDTree
     print "Rendering..."
     
     y = np.array([p['position']['lat'] for p in data])
@@ -134,6 +133,7 @@ def build_map0(data, resolution=0.0005, oob=0.005,
 # Get data and show
 
 def show_map(map):
+    import matplotlib.pyplot as plt
     plt.imshow(map[:,:,:3])
     plt.show()
 
@@ -156,8 +156,9 @@ if __name__ == '__main__':
     position = (np.array([0., 0., 1., 1.])*0.004, np.array([0., 1., 0., 1.])*0.004)
     status = (np.array([0., 10., 0., 10.]), np.array([0., 0., 10., 10.]))
     position, status = extract_data(data)
+    save_data((position, status))
     bounds, map = build_map(position, status)
     #show_map(map)
-    save_map(map, bounds)
+    #save_map(map, bounds)
     
 
