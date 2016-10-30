@@ -28,15 +28,16 @@ def build_map(positions, status,
     bds = (x.min()-oob, y.min()-oob, x.max()+oob, y.max()+oob)
 
     # Rescale
+    resolution_y = resolution * (111.320*np.cos(bds[1]/180.*np.pi)) / 110.574
     x = (x-bds[0])/resolution
     x = x.astype(np.int32)
-    y = (y-bds[1])/resolution
+    y = (y-bds[1])/resolution_y
     y = y.astype(np.int32)
     max_dist = max_dist/resolution
 
     # Size of image
     w = int((bds[2]-bds[0])/resolution)
-    h = int((bds[3]-bds[1])/resolution)
+    h = int((bds[3]-bds[1])/resolution_y)
 
     # Buffers
     sf = np.zeros((h, w)) # pixels free
@@ -55,8 +56,8 @@ def build_map(positions, status,
     sa[y, x] = 1. 
 
     # Blur data
-    sigma = 0.002/resolution
-    coef = 0.00001/(resolution**2)
+    sigma = 0.0023/resolution
+    coef = 0.000011/(resolution**2)
     def blurit(a, sigma=sigma, coef=coef):
         a = gaussian_filter(a, sigma, mode='constant') * coef
         a[a>1.] = 1.
@@ -64,15 +65,15 @@ def build_map(positions, status,
     # print (sigma, coef)
     sf = blurit(sf)
     sb = blurit(sb)
-    sa = blurit(sa, sigma=sigma*2, coef=coef*4)
+    sa = blurit(sa, sigma=sigma*2, coef=coef*5)
 
     # Do magic with colors
     map = np.zeros((h, w, 4))
     tmp = 1.0-(sf+sb)
     tmp[tmp<0.] = 0.
-    map[:,:,0] = (sb-sf**1.5) + tmp 
-    map[:,:,1] = (1.-np.abs(sb-sf))
-    map[:,:,2] = (sf-sb**1.5)
+    map[:,:,0] = (sb-sf**1.2) + tmp 
+    map[:,:,1] = (1.-np.abs(sb-sf)**1.2)
+    map[:,:,2] = (sf-sb**1.2)
 
     # Rebalance colors
     map[:,:,0] += map[:,:,1] * 0.2
@@ -176,8 +177,8 @@ if __name__ == '__main__':
     data = retrieve_data(contract)
     if False:
         # Control : show 4 stations, with a different status, to see how colors blend
-        position = (np.array([0., 0., 1., 1.])*0.004,
-                    np.array([0., 1., 0., 1.])*0.004)
+        position = (np.array([0., 0., 1., 1.])*0.005,
+                    np.array([0., 1., 0., 1.])*0.005)
         status = (np.array([0., 10., 0., 10.]),
                   np.array([0., 0., 10., 10.]))
     else:

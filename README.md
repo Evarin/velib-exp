@@ -30,12 +30,8 @@ Works with [many cities](https://developer.jcdecaux.com/#/opendata/vls?page=stat
 Demo
 ----
 
-![An example of Paris](http://www.evarin.fr/velib/statique.png)
+What it can give superposed on a (Google) Map:
+
+![An example of Paris](http://www.evarin.fr/velib/statique.jpg)
 
 http://evarin.fr/velib/
-
-
-Todo
-----
-
-- Proper lat-lon -> km conversion
