@@ -30,6 +30,8 @@ Works with [many cities](https://developer.jcdecaux.com/#/opendata/vls?page=stat
 Demo
 ----
 
+![An example of Paris](http://www.evarin.fr/velib/statique.png)
+
 http://evarin.fr/velib/
 
 
