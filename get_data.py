@@ -2,10 +2,10 @@ import urllib, json
 import numpy as np
 import time
 
-from secrets import API_KEY # JCDECAUX's API KEY
+from secrets import JCDECAUX_API_KEY # JCDECAUX's API KEY
 
 def retrieve_data(contract="paris"):
-    url = "https://api.jcdecaux.com/vls/v1/stations?apiKey={}&contract={}".format(API_KEY, contract)
+    url = "https://api.jcdecaux.com/vls/v1/stations?apiKey={}&contract={}".format(JCDECAUX_API_KEY, contract)
     response = urllib.urlopen(url)
     data = json.loads(response.read())
     return data

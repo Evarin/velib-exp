@@ -20,6 +20,8 @@ def build_map(positions, status,
     # Extract data
     x, y = positions
     st_free, st_busy = status
+    st_free = st_free.copy()
+    st_busy = st_busy.copy()
     
     min_free = float(min_free)
     min_busy = float(min_busy)
@@ -56,8 +58,8 @@ def build_map(positions, status,
     sa[y, x] = 1. 
 
     # Blur data
-    sigma = 0.0023/resolution
-    coef = 0.000011/(resolution**2)
+    sigma = 0.0027/resolution
+    coef = 0.00002/(resolution**2)
     def blurit(a, sigma=sigma, coef=coef):
         a = gaussian_filter(a, sigma, mode='constant') * coef
         a[a>1.] = 1.
@@ -71,9 +73,12 @@ def build_map(positions, status,
     map = np.zeros((h, w, 4))
     tmp = 1.0-(sf+sb)
     tmp[tmp<0.] = 0.
-    map[:,:,0] = (sb-sf**1.2) + tmp 
+    map[:,:,0] = (sb-sf**1.2) + tmp
     map[:,:,1] = (1.-np.abs(sb-sf)**1.2)
     map[:,:,2] = (sf-sb**1.2)
+
+    map[map>1.] = 1.
+    map[map<0.] = 0.
 
     # Rebalance colors
     map[:,:,0] += map[:,:,1] * 0.2
@@ -91,7 +96,6 @@ def build_map(positions, status,
 
     # Crop values
     map[map>1.] = 1.
-    map[map<0.] = 0.
 
     # Show stations
     map[y,x,:] = 1.
@@ -187,3 +191,5 @@ if __name__ == '__main__':
     bounds, map = build_map(position, status)
     # show_map(map)
     save_map(map, bounds)
+    import anim
+    anim.save_fond_map(map)
