@@ -39,12 +39,13 @@ def generate_all(c, stations, resolution=600000,
     lastday = -1
     sunrise = 0
     sunset = 0
+    fond = Image.open('output/fond.png').convert('RGBA')
     for (id, ab, fs, t) in c.execute("SELECT station_id, available_bikes, free_stands, updated FROM stationsstats"):
         if lasttime == 0:
             lasttime = (t / resolution) * resolution
         if t > lasttime + resolution:
             bounds, map = build_map(positions, status)
-            dt = datetime.fromtimestamp(lasttime/1000, tz=tz.tzutc()).astimezone(tz.tzlocal())
+            dt = datetime.fromtimestamp((lasttime)/1000, tz=tz.tzutc()).astimezone(tz.tzlocal())
             if dt.day != lastday:
                 wt = retrieve_weather(lasttime/1000)
                 (hweather, (sunrise, sunset)) = extract_weather(wt)
@@ -65,8 +66,8 @@ def generate_all(c, stations, resolution=600000,
                 luminosity = 0.5 - dsset/60.
             else:
                 luminosity = 0. if dsrise < 0 or dsset > 0 else 1.
-            save_fond_map(map, f,
-                          caption=(dt.strftime(u"%A %d %B %Y"), dt.strftime(u"%Hh%M")),
+            save_fond_map(map, f, fond=fond,
+                          caption=(dt.strftime("%A %d %B %Y").decode('utf-8'), dt.strftime(u"%Hh%M")),
                           weather=weather,
                           luminosity=luminosity)
             if destination == "stdout":
@@ -83,12 +84,15 @@ def generate_all(c, stations, resolution=600000,
 
 # Draw the result on a wonderful map and a few other info
 
-def save_fond_map(map, imfile="output/image2.jpg", caption=None, weather=None, luminosity=None):
+weather_icons = {}
+
+def save_fond_map(map, imfile="output/image2.jpg", fond=None, caption=None, weather=None, luminosity=None):
     map = map * 255
     map[:,:,3] *= 0.7
     map = map.astype(np.uint8)
     image = Image.fromarray(map)
-    fond = Image.open('output/fond.png').convert('RGBA')
+    if fond is None:
+        fond = Image.open('output/fond.png').convert('RGBA')
     if not luminosity is None and luminosity < 1.0:
         mm = 0.5 + luminosity/2.
         fond = fond.point(lambda p: p*mm)
@@ -97,7 +101,7 @@ def save_fond_map(map, imfile="output/image2.jpg", caption=None, weather=None, l
     w, h = image.size
     if not weather is None or not caption is None:
         d = ImageDraw.Draw(image)
-        font = ImageFont.truetype('output/fonts/Raleway-Bold.ttf', 48)
+        font = ImageFont.truetype('data/fonts/Raleway-Bold.ttf', 48)
     if not caption is None:
         (date, time) = caption
         ts = d.textsize(date, font)
@@ -107,7 +111,10 @@ def save_fond_map(map, imfile="output/image2.jpg", caption=None, weather=None, l
     if not weather is None:
         (wic, tmp) = weather
         d.text((158, 50), u"%d°C" % tmp, (0,0,0,255), font)
-        icone = Image.open('weather/{}.png'.format(wic))
+        global weather_icons
+        if not wic in weather_icons:
+            weather_icons[wic] = Image.open('data/icons/{}.png'.format(wic))
+        icone = weather_icons[wic]
         image.paste(icone, box=(74-icone.size[0]/2,74-icone.size[1]/2), mask=icone)
     image.save(imfile, 'JPEG')
 
