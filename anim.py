@@ -105,17 +105,17 @@ def save_fond_map(map, imfile="output/image2.jpg", fond=None, caption=None, weat
     if not caption is None:
         (date, time) = caption
         ts = d.textsize(date, font)
-        d.text((w-ts[0]-10, h-ts[1]-10), date, (0,0,0,255), font)
+        d.text((w-ts[0]-20, h-ts[1]-20), date, (0,0,0,255), font)
         ts = d.textsize(time, font)
-        d.text((w-ts[0]-10, 10), time, (0,0,0,255), font)
+        d.text((w-ts[0]-20, 20), time, (0,0,0,255), font)
     if not weather is None:
         (wic, tmp) = weather
-        d.text((158, 50), u"%d°C" % tmp, (0,0,0,255), font)
+        d.text((178, 50), u"%d°C" % tmp, (0,0,0,255), font)
         global weather_icons
         if not wic in weather_icons:
             weather_icons[wic] = Image.open('data/icons/{}.png'.format(wic))
         icone = weather_icons[wic]
-        image.paste(icone, box=(74-icone.size[0]/2,74-icone.size[1]/2), mask=icone)
+        image.paste(icone, box=(94-icone.size[0]/2,84-icone.size[1]/2), mask=icone)
     image.save(imfile, 'JPEG')
 
 # Main
@@ -123,7 +123,7 @@ def save_fond_map(map, imfile="output/image2.jpg", fond=None, caption=None, weat
 if __name__ == '__main__':
     (c, stations) = init_conn('/media/evarin/Data/velib.db')
     if len(sys.argv) > 1:
-         destination = sys.argv[1]
+        destination = sys.argv[1]
     else:
         destination = "output/time/"
     generate_all(c, stations, destination=destination)
