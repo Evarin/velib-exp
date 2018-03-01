@@ -107,7 +107,7 @@ def build_map0(data, resolution=0.0005, oob=0.005,
               min_free=10, min_busy=10,
               max_dist=0.001):
     from sklearn.neighbors import KDTree
-    print "Rendering..."
+    print("Rendering...")
     
     y = np.array([p['position']['lat'] for p in data])
     x = np.array([p['position']['lng'] for p in data])
@@ -128,7 +128,7 @@ def build_map0(data, resolution=0.0005, oob=0.005,
 
     map = np.zeros((h, w, 3))
 
-    print map.shape
+    print(map.shape)
     pts = np.array([x, y]).transpose()
     tree = KDTree(pts)
     

@@ -71,7 +71,7 @@ def generate_all(c, stations, resolution=600000,
                           weather=weather,
                           luminosity=luminosity)
             if destination == "stdout":
-                print f.getvalue()
+                print(f.getvalue())
                 f.close()
             lasttime = (t / resolution) * resolution
         try:
@@ -80,7 +80,7 @@ def generate_all(c, stations, resolution=600000,
             status[1][i] = ab
         except KeyError:
             continue
-            print "Inexistant station", id
+            print("Inexistant station", id)
 
 # Draw the result on a wonderful map and a few other info
 

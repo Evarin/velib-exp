@@ -1,4 +1,11 @@
-import urllib, json
+try:
+    import urllib.request as urllib
+    py2 = False
+except ImportError:
+    import urllib
+    py2 = True
+
+import json
 import numpy as np
 import time
 
@@ -21,7 +28,10 @@ def extract_data(data, contract=None, **kwargs):
 def retrieve_data_jcdecaux(contract="lyon"):
     url = "https://api.jcdecaux.com/vls/v1/stations?apiKey={}&contract={}".format(JCDECAUX_API_KEY, contract)
     response = urllib.urlopen(url)
-    data = json.loads(response.read())
+    if py2:
+        data = json.loads(response.read())
+    else:
+        data = json.loads(response.read().decode('utf-8'))
     return data
 
 def extract_data_jcdecaux(data):
@@ -38,7 +48,11 @@ def extract_data_jcdecaux(data):
 def retrieve_data_velib2():
     url = "https://www.velib-metropole.fr/webapi/map/details?gpsTopLatitude=48.98832818524669&gpsTopLongitude=3.0157470703125004&gpsBotLatitude=48.739889600673365&gpsBotLongitude=1.7070007324218752&zoomLevel=11"
     response = urllib.urlopen(url)
-    data = json.loads(response.read())
+    if py2:
+        data = json.loads(response.read())
+    else:
+        data = json.loads(response.read().decode('utf-8'))
+
     return data
 
 def extract_data_velib2(data, ebike=False, overflow=True):
