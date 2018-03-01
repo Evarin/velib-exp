@@ -176,6 +176,10 @@ if __name__ == '__main__':
     import sys
     if len(sys.argv)>1:
         contract = sys.argv[1]
+        if len(sys.argv)>2:
+            ofile = sys.argv[2]
+        else:
+            ofile = "output/%s" % contract
     else:
         contract = 'paris'
     data = retrieve_data(contract)
@@ -186,10 +190,10 @@ if __name__ == '__main__':
         status = (np.array([0., 10., 0., 10.]),
                   np.array([0., 0., 10., 10.]))
     else:
-        position, status = extract_data(data)
+        position, status = extract_data(data, contract)
         # save_data((position, status))
     bounds, map = build_map(position, status)
     # show_map(map)
-    save_map(map, bounds)
+    save_map(map, bounds, ofile+'.png', ofile+'.js')
     import anim
     anim.save_fond_map(map)
