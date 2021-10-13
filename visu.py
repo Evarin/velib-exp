@@ -42,7 +42,7 @@ def build_map(positions, status,
     h = int((bds[3]-bds[1])/resolution_y)
     if h > 4000 or w > 4000:
         print(h, w)
-        return
+        return None, None
 
     # Buffers
     sf = np.zeros((h, w), np.float32) # pixels free
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         # save_data((position, status))
     bounds, map = build_map(position, status)
     # show_map(map)
-    if map:
+    if map is not None:
         save_map(map, bounds, ofile+'.png', ofile+'.js')
     else:
         with open("output/error.json", "w") as target:
