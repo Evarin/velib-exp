@@ -19,8 +19,6 @@ def build_map(positions, status,
     
     # Extract data
     x, y = positions
-    x[0] = 0
-    y[0] = 0
     st_free, st_busy = status
     st_free = st_free.copy()
     st_busy = st_busy.copy()
@@ -43,6 +41,7 @@ def build_map(positions, status,
     w = int((bds[2]-bds[0])/resolution)
     h = int((bds[3]-bds[1])/resolution_y)
     if h > 4000 or w > 4000:
+        print(h, w)
         return
 
     # Buffers
