@@ -19,6 +19,8 @@ def build_map(positions, status,
     
     # Extract data
     x, y = positions
+    x[0] = 0
+    y[0] = 0
     st_free, st_busy = status
     st_free = st_free.copy()
     st_busy = st_busy.copy()
@@ -40,11 +42,13 @@ def build_map(positions, status,
     # Size of image
     w = int((bds[2]-bds[0])/resolution)
     h = int((bds[3]-bds[1])/resolution_y)
+    if h > 4000 or w > 4000:
+        return
 
     # Buffers
-    sf = np.zeros((h, w)) # pixels free
-    sb = np.zeros((h, w)) # pixels busy
-    sa = np.zeros((h, w)) # pixels close to any station
+    sf = np.zeros((h, w), np.float32) # pixels free
+    sb = np.zeros((h, w), np.float32) # pixels busy
+    sa = np.zeros((h, w), np.float32) # pixels close to any station
 
     # Renormalize data
     st_free[st_free>min_free] = min_free
@@ -194,6 +198,11 @@ if __name__ == '__main__':
         # save_data((position, status))
     bounds, map = build_map(position, status)
     # show_map(map)
-    save_map(map, bounds, ofile+'.png', ofile+'.js')
-    import anim
-    anim.save_fond_map(map)
+    if map:
+        save_map(map, bounds, ofile+'.png', ofile+'.js')
+    else:
+        with open("output/error.json", "w") as target:
+            json.dump(data, target)
+        raise ValueError("Incoherent data")
+    #import anim
+    #anim.save_fond_map(map)

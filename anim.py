@@ -13,7 +13,10 @@ from datetime import datetime
 from dateutil import tz
 from tzlocal import get_localzone
 import sys
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import locale
 locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
@@ -51,7 +54,7 @@ def generate_all(c, stations, resolution=600000,
                 (hweather, (sunrise, sunset)) = extract_weather(wt)
                 lastday = dt.day
             if destination == "stdout":
-                f = StringIO.StringIO()
+                f = StringIO()
             else:
                 f = os.path.join(destination, "{}.jpg".format(lasttime))
             for (tw, icon, temp) in hweather:
@@ -116,7 +119,7 @@ def save_fond_map(map, imfile="output/image2.jpg", fond=None, caption=None, weat
             weather_icons[wic] = Image.open('data/icons/{}.png'.format(wic))
         icone = weather_icons[wic]
         image.paste(icone, box=(94-icone.size[0]/2,84-icone.size[1]/2), mask=icone)
-    image.save(imfile, 'JPEG')
+    image.convert("RGB").save(imfile, 'JPEG')
 
 # Main
 

@@ -55,7 +55,7 @@ def retrieve_data_velib2():
 
     return data
 
-def extract_data_velib2(data, ebike=False, overflow=True):
+def extract_data_velib2(data, ebike=True, overflow=False):
     y = -np.array([p['station']['gps']['latitude'] for p in data])
     x = np.array([p['station']['gps']['longitude'] for p in data])
 
